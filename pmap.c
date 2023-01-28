@@ -16,20 +16,20 @@ char *map;//Current map data backup
 char *bak;//Current map data backup
 // Initialise the life state graphic data to 0
 void initLifeMap(){
-    #pragma omp parallel for
-    for (int iy = 0; iy < HT; iy++){
-        #pragma omp parallel for
-        for (int ix = 0; ix < WD; ix++){
-            map[iy * WD + ix] = 0;   
-        }
-    }
-    #pragma omp parallel for 
-    for (int iy = 0; iy <= HT; iy++){
-        #pragma omp parallel for
-        for (int ix = 0; ix <= WD; ix++){
-            bak[iy * (WD+1) + ix] = 0;   
-        } 
-    }
+    // #pragma omp parallel for
+    // for (int iy = 0; iy < HT; iy++){
+    //     #pragma omp parallel for
+    //     for (int ix = 0; ix < WD; ix++){
+    //         map[iy * WD + ix] = 0;   
+    //     }
+    // }
+    // #pragma omp parallel for 
+    // for (int iy = 0; iy <= HT; iy++){
+    //     #pragma omp parallel for
+    //     for (int ix = 0; ix <= WD; ix++){
+    //         bak[iy * (WD+1) + ix] = 0;   
+    //     } 
+    // }
 }
 
 int createGrowerLifeMap(){
@@ -99,13 +99,14 @@ long computGenerations(){
 void oneTime(int periodic){
     
     //Backup of current graphical data for updates
-    #pragma omp parallel for
-    for (int iy = 0; iy < HT; iy++){
-        #pragma omp parallel for
-        for (int ix = 0; ix < WD; ix++){
-            bak[iy * (WD+1) + ix] = map[iy * WD + ix];
-        }
-    }
+    // #pragma omp parallel for
+    // for (int iy = 0; iy < HT; iy++){
+    //     #pragma omp parallel for
+    //     for (int ix = 0; ix < WD; ix++){
+    //         bak[iy * (WD+1) + ix] = map[iy * WD + ix];
+    //     }
+    // }
+    bak = map;
     #pragma omp parallel for
     for (int iy = 0; iy < HT; iy++) {
         #pragma omp parallel for
@@ -122,9 +123,9 @@ void oneTime(int periodic){
                 dn = (dn == 0 ? HT : dn);
             }
             //Calculating the number of adjacent lives
-            cnt = bak[up * (WD+1) + lft] + bak[up * (WD+1) + ix]  + bak[up * (WD+1) + rht]
+            cnt = bak[up * (WD) + lft] + bak[up * (WD) + ix]  + bak[up * (WD) + rht]
                   + bak[iy * (WD+1) + lft]  + bak[iy * (WD+1) + rht]
-                  + bak[dn * (WD+1) + lft]  + bak[dn * (WD+1) + ix] + bak[dn * (WD+1) + rht];
+                  + bak[dn * (WD) + lft]  + bak[dn * (WD) + ix] + bak[dn * (WD) + rht];
           
             if (!map[iy * WD + ix] ) //If currently dead
                 map [iy * WD + ix] = (cnt == 3 ? 1 : 0);  //Convert to alive
@@ -138,7 +139,7 @@ void oneTime(int periodic){
 
 int main() {
     map = (char *)calloc(HT * WD , sizeof(char));//calloc will initialise the data to 0
-    bak = (char *)calloc((HT+1) * (WD + 1) , sizeof(char));//Current graphical data backup
+    bak = (char *)calloc(HT * WD , sizeof(char));//Current graphical data backup
     int count = 5000;  //iteration times
     int periodic = 0;  //finite grid with a border of permanently dead cells
     if (map==NULL || bak==NULL){
