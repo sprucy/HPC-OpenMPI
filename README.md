@@ -1,4 +1,4 @@
-# HPC_OpenMPI
+# Assignment: MPI and OpenMP
 
 The Conway Game of Life is a zero-player game, which means that its evolution is determined by its
 initial state and requires no input from the human player. The universe of the Game of Life is an
