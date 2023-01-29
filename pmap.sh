@@ -16,7 +16,7 @@ module load GCC/9.3.0
 echo "OpenMP parallelism"
 echo
 
-for ncores in {1..16}
+for ncores in {1..3}
 do
   export OMP_NUM_THREADS=$ncores
 
