@@ -109,7 +109,7 @@ void oneTime(int periodic){
 int main() {
     map = (char *)calloc(HT * WD , sizeof(char));//calloc will initialise the data to 0
     bak = (char *)calloc((HT+1) * (WD + 1) , sizeof(char));//Current graphical data backup
-    int count = 100;  //iteration times
+    int count = 5000;  //iteration times
     int periodic = 0;  //finite grid with a border of permanently dead cells
     if (map==NULL || bak==NULL){
         printf("\nMemory allocation error, program exit!");
