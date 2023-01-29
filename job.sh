@@ -22,6 +22,6 @@ do
 
   echo "CPUS: " $OMP_NUM_THREADS
   echo "CPUS: " $OMP_NUM_THREADS >&2
-  ./pmap
+  ./main
   echo "DONE "
 done

@@ -3,4 +3,4 @@
 module load 2020
 module load GCC/9.3.0
 
-gcc -fopenmp -o pmap pmap.c -lm
+gcc -fopenmp -o main main.c -lm
