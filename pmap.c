@@ -11,29 +11,11 @@
 #define HT (3000) 
 #define WD (3000)
 
-
+int population=0;
 char *map;//Current map data backup
 char *bak;//Current map data backup
-// Initialise the life state graphic data to 0
-void initLifeMap(){
-    // #pragma omp parallel for
-    // for (int iy = 0; iy < HT; iy++){
-    //     #pragma omp parallel for
-    //     for (int ix = 0; ix < WD; ix++){
-    //         map[iy * WD + ix] = 0;   
-    //     }
-    // }
-    // #pragma omp parallel for 
-    // for (int iy = 0; iy <= HT; iy++){
-    //     #pragma omp parallel for
-    //     for (int ix = 0; ix <= WD; ix++){
-    //         bak[iy * (WD+1) + ix] = 0;   
-    //     } 
-    // }
-}
 
 int createGrowerLifeMap(){
-    initLifeMap();
     if ((1500 + GROWER_HEIGHT) >= HT || (1500 + GROWER_WIDTH) >= WD ){
         printf("\nBoard Height or Width Error!");
         return 0;
@@ -47,9 +29,8 @@ int createGrowerLifeMap(){
     }
     return 1;
 }
-//
+
 int createGliderLifeMap(){
-    initLifeMap();
     if ((1500 + GLIDER_HEIGHT) >= HT || (1500 + GLIDER_WIDTH) >= WD ){
         printf("\nBoard Height or Width Error!");
         return 0;
@@ -66,7 +47,6 @@ int createGliderLifeMap(){
 }
 // 
 int createBeehiveLifeMap(){
-    initLifeMap();
     if ((1500 + BEEHIVE_HEIGHT) >= HT || (1500 + BEEHIVE_WIDTH) >= WD ){
         printf("\nBoard Height or Width Error!");
         return 0;
@@ -82,34 +62,21 @@ int createBeehiveLifeMap(){
     return 1;
 }
 
-// Comput Generations number
-long computGenerations(){
-    long sum = 0;
-    #pragma omp parallel for reduction(+ : sum)
-    for (int iy = 0; iy < HT; iy++) {
-        #pragma omp parallel for reduction(+ : sum)
-        for (int ix = 0; ix < WD; ix++) {
-            sum = sum + map[iy * WD + ix];
-        }
-    }
-    return sum;
-}
 
 // One life state diagram simulation
 void oneTime(int periodic){
-    
+    population = 0;
     //Backup of current graphical data for updates
-    // #pragma omp parallel for
-    // for (int iy = 0; iy < HT; iy++){
-    //     #pragma omp parallel for
-    //     for (int ix = 0; ix < WD; ix++){
-    //         bak[iy * (WD+1) + ix] = map[iy * WD + ix];
-    //     }
-    // }
-    bak = map;
+    #pragma omp parallel for
+    for (int iy = 0; iy < HT; iy++){
+        #pragma omp parallel for
+        for (int ix = 0; ix < WD; ix++){
+            bak[iy * (WD+1) + ix] = map[iy * WD + ix];
+        }
+    }
     #pragma omp parallel for
     for (int iy = 0; iy < HT; iy++) {
-        #pragma omp parallel for
+        #pragma omp parallel for reduction(+ : population)
         for (int ix = 0; ix < WD; ix++) {
             int up, dn, lft, rht, cnt;
             lft = (ix + WD - 1) % WD;
@@ -123,9 +90,9 @@ void oneTime(int periodic){
                 dn = (dn == 0 ? HT : dn);
             }
             //Calculating the number of adjacent lives
-            cnt = bak[up * (WD) + lft] + bak[up * (WD) + ix]  + bak[up * (WD) + rht]
+            cnt = bak[up * (WD+1) + lft] + bak[up * (WD+1) + ix]  + bak[up * (WD+1) + rht]
                   + bak[iy * (WD+1) + lft]  + bak[iy * (WD+1) + rht]
-                  + bak[dn * (WD) + lft]  + bak[dn * (WD) + ix] + bak[dn * (WD) + rht];
+                  + bak[dn * (WD+1) + lft]  + bak[dn * (WD+1) + ix] + bak[dn * (WD+1) + rht];
           
             if (!map[iy * WD + ix] ) //If currently dead
                 map [iy * WD + ix] = (cnt == 3 ? 1 : 0);  //Convert to alive
@@ -133,13 +100,15 @@ void oneTime(int periodic){
                 map[iy * WD + ix] = 1;  //keep alive
             else //Currently alive and surrounded by less than 2 or more than 3 lives
                 map[iy * WD + ix] = 0;  //Convert to dead
+            
+            population = population + map[iy * WD + ix];
         }
     }
 }
 
 int main() {
     map = (char *)calloc(HT * WD , sizeof(char));//calloc will initialise the data to 0
-    bak = (char *)calloc(HT * WD , sizeof(char));//Current graphical data backup
+    bak = (char *)calloc((HT+1) * (WD + 1) ,sizeof(char));//Current graphical data backup
     int count = 5000;  //iteration times
     int periodic = 0;  //finite grid with a border of permanently dead cells
     if (map==NULL || bak==NULL){
@@ -179,9 +148,9 @@ int main() {
     for(int i=0;i<count;i++) {      
         oneTime(periodic);
         if (i==9)
-            printf("\nGrower lifeMap verify: Population:%d, Generations:%ld",i+1,computGenerations());
+            printf("\nGrower lifeMap verify: Population:%d, Generations:%d",population, i+1);
         if (i==99)
-            printf("\nGrower lifeMap verify: Population:%d, Generations:%ld",i+1,computGenerations());
+            printf("\nGrower lifeMap verify: Population:%d, Generations:%d",population, i+1);
     }
     // Stop timing
     end=omp_get_wtime();
