@@ -11,7 +11,7 @@
 #define HT (3000) 
 #define WD (3000)
 
-int population=0;
+long population = 0;
 char *map;//Current map data backup
 char *bak;//Current map data backup
 
@@ -29,7 +29,7 @@ int createGrowerLifeMap(){
     }
     return 1;
 }
-
+//
 int createGliderLifeMap(){
     if ((1500 + GLIDER_HEIGHT) >= HT || (1500 + GLIDER_WIDTH) >= WD ){
         printf("\nBoard Height or Width Error!");
@@ -74,7 +74,7 @@ void oneTime(int periodic){
             bak[iy * (WD+1) + ix] = map[iy * WD + ix];
         }
     }
-    #pragma omp parallel for
+    #pragma omp parallel for reduction(+ : population)
     for (int iy = 0; iy < HT; iy++) {
         #pragma omp parallel for reduction(+ : population)
         for (int ix = 0; ix < WD; ix++) {
@@ -108,36 +108,36 @@ void oneTime(int periodic){
 
 int main() {
     map = (char *)calloc(HT * WD , sizeof(char));//calloc will initialise the data to 0
-    bak = (char *)calloc((HT+1) * (WD + 1) ,sizeof(char));//Current graphical data backup
-    int count = 5000;  //iteration times
+    bak = (char *)calloc((HT+1) * (WD + 1) , sizeof(char));//Current graphical data backup
+    int count = 100;  //iteration times
     int periodic = 0;  //finite grid with a border of permanently dead cells
     if (map==NULL || bak==NULL){
         printf("\nMemory allocation error, program exit!");
         exit(-1);
     }
     //To verify the correctness
-    /*
+    printf("\nVerify Beehive");     
     if (!createBeehiveLifeMap()){
         printf("\nBeehive lifemap data init error, program exit!");
         exit(-1);
     }
     for(int i=0;i<count;i++) {     
         oneTime(periodic);
-        long gen = computGenerations();
-        if (gen != 6)
-            printf("\nBeehive lifemap verify error : Population:%d, Generations:%ld",i+1,gen);
+        if (population != 6)
+            printf("\nBeehive lifemap verify error : Generations:%d, Population:%ld",i+1,population);
     }
-
+    printf("\nThe end of Beehive lifeMap: Generations:%d, Population:%ld",count, population);
+    printf("\nVerify Glider");
     if (!createGliderLifeMap()){
         printf("\nGlider lifemap init error, program exit!");
         exit(-1);
     }
     for(int i=0;i<count;i++) {     
         oneTime(periodic);
-        long gen = computGenerations();
-        if (gen != 5 && gen != 0)
-            printf("\nGlider Lifemap verify error : Population:%d, Generations:%ld",i+1,gen);
-    }*/
+        if (population != 5 && population != 0)
+            printf("\nGlider Lifemap verify error : Generations:%d, Population:%ld",i+1, population);
+    }
+    printf("\nThe end of Glider lifemap: Generations:%d, Population:%ld",count, population);
     // Get timing
     double start,end;
     start=omp_get_wtime();
@@ -148,10 +148,11 @@ int main() {
     for(int i=0;i<count;i++) {      
         oneTime(periodic);
         if (i==9)
-            printf("\nGrower lifeMap verify: Population:%d, Generations:%d",population, i+1);
+            printf("\nGrower lifeMap verify: Generations:%d, Population:%ld",i+1, population);
         if (i==99)
-            printf("\nGrower lifeMap verify: Population:%d, Generations:%d",population, i+1);
+            printf("\nGrower lifeMap verify: Generations:%d, Population:%ld",i+1, population);
     }
+	printf("\nThe end of Grower lifemap: Generations:%d, Population:%ld",count, population);
     // Stop timing
     end=omp_get_wtime();
     printf("\nGrower lifeMap %d iterations obtained in %f seconds\n",count,end-start);
