@@ -60,4 +60,4 @@ but there was almost no impact on the speedup ratio, as shown in Figures 2 and 3
 Here is the code repository link - https://github.com/sprucy/HPCO penM P I
 
 
-![](./graphs/speedup-1.png)
+![](./graphs/speedup-2.png)
